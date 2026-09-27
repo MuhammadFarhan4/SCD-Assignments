@@ -1,0 +1,32 @@
+def calculate_gross_salary(basic_salary, allowance):
+    return basic_salary + allowance
+
+
+def calculate_tax(gross_salary, tax_rate):
+    return gross_salary * (tax_rate / 100)
+
+
+def calculate_net_salary(gross_salary, tax_amount):
+    return gross_salary - tax_amount
+
+
+name = input("Enter employee name: ")
+basic_salary = float(input("Enter basic salary: "))
+allowance = float(input("Enter allowance: "))
+tax_rate = float(input("Enter tax rate (%): "))
+
+gross_salary = calculate_gross_salary(basic_salary, allowance)
+tax_amount = calculate_tax(gross_salary, tax_rate)
+net_salary = calculate_net_salary(gross_salary, tax_amount)
+
+print("\n====================")
+print("   PAY SLIP")
+print("====================")
+print(f"Employee Name: {name}")
+print(f"Basic Salary: {basic_salary}")
+print(f"Allowance: {allowance}")
+print(f"Gross Salary: {gross_salary}")
+print(f"Tax Rate: {tax_rate}%")
+print(f"Tax Amount: {tax_amount}")
+print(f"Net Salary: {net_salary}")
+print("====================")
