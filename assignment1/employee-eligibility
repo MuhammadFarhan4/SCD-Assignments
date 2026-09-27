@@ -1,0 +1,141 @@
+from dataclasses import dataclass
+import tkinter as tk
+from tkinter import messagebox, ttk
+
+
+@dataclass
+class Employee:
+    name: str
+    active: bool
+    months_worked: int
+    performance_rating: float
+    disciplinary_action: bool
+    attendance: int
+
+
+def is_eligible_direct(employee: Employee) -> bool:
+    """Check all eligibility rules in one expression."""
+    return (
+        employee.active
+        and employee.months_worked >= 12
+        and employee.performance_rating >= 4.0
+        and not employee.disciplinary_action
+        and employee.attendance >= 900
+    )
+
+
+def is_eligible_readable(employee: Employee) -> bool:
+    """Check each rule separately so the logic is easy to follow."""
+    if not employee.active:
+        return False
+    if employee.months_worked < 12:
+        return False
+    if employee.performance_rating < 4.0:
+        return False
+    if employee.disciplinary_action:
+        return False
+    if employee.attendance < 900:
+        return False
+    return True
+
+
+def run_scenario_tests() -> None:
+    scenarios = [
+        Employee("Eligible employee", True, 12, 4.0, False, 900),
+        Employee("Inactive employee", False, 24, 4.8, False, 950),
+        Employee("New employee", True, 6, 4.5, False, 950),
+        Employee("Low rating employee", True, 18, 3.9, False, 950),
+        Employee("Disciplinary employee", True, 18, 4.5, True, 950),
+        Employee("Low attendance employee", True, 18, 4.5, False, 899),
+    ]
+
+    for employee in scenarios:
+        direct_result = is_eligible_direct(employee)
+        readable_result = is_eligible_readable(employee)
+        assert direct_result == readable_result
+
+    assert is_eligible_direct(scenarios[0]) is True
+    assert all(is_eligible_direct(employee) is False for employee in scenarios[1:])
+
+
+class EligibilityApp:
+    def __init__(self, window: tk.Tk) -> None:
+        self.window = window
+        self.window.title("Employee Eligibility Checker")
+        self.window.resizable(False, False)
+
+        main = ttk.Frame(window, padding=20)
+        main.grid()
+
+        ttk.Label(main, text="Employee Eligibility Checker", font=("Segoe UI", 16, "bold")).grid(
+            column=0, row=0, columnspan=2, pady=(0, 15)
+        )
+
+        self.name = tk.StringVar()
+        self.months = tk.StringVar(value="12")
+        self.rating = tk.StringVar(value="4.0")
+        self.attendance = tk.StringVar(value="900")
+        self.active = tk.BooleanVar(value=True)
+        self.disciplinary_action = tk.BooleanVar(value=False)
+
+        self.add_entry(main, "Employee name:", self.name, 1)
+        self.add_entry(main, "Months worked:", self.months, 2)
+        self.add_entry(main, "Performance rating:", self.rating, 3)
+        self.add_entry(main, "Attendance:", self.attendance, 4)
+
+        ttk.Checkbutton(main, text="Employee is active", variable=self.active).grid(
+            column=0, row=5, columnspan=2, sticky="w", pady=(8, 2)
+        )
+        ttk.Checkbutton(main, text="Has disciplinary action", variable=self.disciplinary_action).grid(
+            column=0, row=6, columnspan=2, sticky="w"
+        )
+
+        ttk.Button(main, text="Check eligibility", command=self.check_eligibility).grid(
+            column=0, row=7, columnspan=2, sticky="ew", pady=(18, 8)
+        )
+        ttk.Button(main, text="Clear", command=self.clear_form).grid(
+            column=0, row=8, columnspan=2, sticky="ew"
+        )
+
+        self.result = ttk.Label(main, text="Enter employee details, then check eligibility.", wraplength=320)
+        self.result.grid(column=0, row=9, columnspan=2, pady=(15, 0))
+
+    @staticmethod
+    def add_entry(parent: ttk.Frame, label: str, variable: tk.StringVar, row: int) -> None:
+        ttk.Label(parent, text=label).grid(column=0, row=row, sticky="w", padx=(0, 12), pady=4)
+        ttk.Entry(parent, textvariable=variable, width=24).grid(column=1, row=row, sticky="ew", pady=4)
+
+    def check_eligibility(self) -> None:
+        try:
+            employee = Employee(
+                name=self.name.get().strip() or "This employee",
+                active=self.active.get(),
+                months_worked=int(self.months.get()),
+                performance_rating=float(self.rating.get()),
+                disciplinary_action=self.disciplinary_action.get(),
+                attendance=int(self.attendance.get()),
+            )
+        except ValueError:
+            messagebox.showerror("Invalid input", "Months, rating, and attendance must be numbers.")
+            return
+
+        if is_eligible_readable(employee):
+            self.result.configure(text=f"{employee.name} is eligible.", foreground="green")
+        else:
+            self.result.configure(text=f"{employee.name} is not eligible.", foreground="red")
+
+    def clear_form(self) -> None:
+        self.name.set("")
+        self.months.set("12")
+        self.rating.set("4.0")
+        self.attendance.set("900")
+        self.active.set(True)
+        self.disciplinary_action.set(False)
+        self.result.configure(text="Enter employee details, then check eligibility.", foreground="black")
+
+
+if __name__ == "__main__":
+    run_scenario_tests()
+    app_window = tk.Tk()
+    EligibilityApp(app_window)
+    app_window.mainloop()
